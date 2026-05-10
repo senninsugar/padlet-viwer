@@ -108,41 +108,27 @@
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
 
+        /* --- Poll Section --- */
+        .poll-container { 
+            margin: 16px 0; background: #f8fafc; border: 1px solid #e2e8f0; 
+            border-radius: 8px; overflow: hidden; font-size: 0.8rem;
+        }
+        .poll-header { 
+            background: #f1f5f9; padding: 8px 12px; font-weight: 700; 
+            border-bottom: 1px solid #e2e8f0; color: #475569; 
+        }
+        .poll-item { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; }
+        .poll-item:last-child { border-bottom: none; }
+        .poll-info { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .poll-label { font-weight: 600; color: #334155; }
+        .poll-count { color: #64748b; font-weight: 700; }
+        .poll-bar-bg { background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; position: relative; }
+        .poll-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease-out; }
+
         /* Reactions */
         .reactions-section { margin-top: 12px; display: flex; align-items: center; gap: 12px; }
         .stars { background: #fffbeb; color: #b45309; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; }
         .comment-count { font-size: 0.7rem; color: #9ca3af; display: flex; align-items: center; }
-
-        /* --- Visual Poll Table Style --- */
-        .poll-container { 
-            margin: 14px 0; border: 1px solid #e5e7eb; border-radius: 10px; 
-            background: #ffffff; overflow: hidden; 
-        }
-        .poll-title { 
-            background: #f9fafb; padding: 8px 12px; font-size: 0.8rem; 
-            font-weight: 800; border-bottom: 1px solid #e5e7eb; color: #374151;
-        }
-        .poll-table { width: 100%; border-collapse: collapse; }
-        .poll-row { border-bottom: 1px solid #f3f4f6; }
-        .poll-row:last-child { border-bottom: none; }
-        .poll-info { padding: 10px 12px; width: 100%; }
-        .poll-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .poll-label { font-size: 0.75rem; font-weight: 600; color: #4b5563; }
-        .poll-votes-text { font-size: 0.7rem; color: #9ca3af; font-weight: 500; }
-        
-        /* Bar chart */
-        .poll-bar-bg { width: 100%; height: 6px; background: #f3f4f6; border-radius: 10px; overflow: hidden; position: relative; }
-        .poll-bar-fill { 
-            height: 100%; border-radius: 10px; 
-            background: linear-gradient(90deg, #3b82f6, #60a5fa);
-            transition: width 0.8s ease-out;
-        }
-        
-        /* Color themes for bars based on label */
-        .poll-row:nth-child(1) .poll-bar-fill { background: linear-gradient(90deg, #10b981, #34d399); }
-        .poll-row:nth-child(2) .poll-bar-fill { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
-        .poll-row:nth-child(3) .poll-bar-fill { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-        .poll-row:nth-child(4) .poll-bar-fill { background: linear-gradient(90deg, #ef4444, #f87171); }
 
         /* Comments List */
         .comments-section { 
@@ -276,31 +262,27 @@
             const date = getMeta(/Created At \(UTC\):\s*(.*)/i) || getMeta(/\*\*Created At:\*\* (.*)/i) || '';
             const rating = parseFloat(getMeta(/star rating.*?([\d\.]+)/i) || 0);
 
-            // 汎用的な投票データ抽出（**...の評価:** や **...の集計:** など）
+            // 汎用投票データの抽出ロジック
             let pollData = null;
-            const pollMatch = text.match(/\*\*(.*?(?:の評価|の集計|のアンケート|の結果):)\*\*\n([\s\S]*?)(?=\n\n|\n####|$)/);
+            // 正規表現: 太字タイトル + 改行 + 箇条書き（- **項目名:** 数 votes）
+            const pollMatch = text.match(/\*\*([^\n]*?評価:|[^\n]*?アンケート:|[^\n]*?Poll:)\*\*\n((?:- \*\*.*?\*\*.*?\n?)+)/i);
+            
             if (pollMatch) {
                 const pollTitle = pollMatch[1];
-                const pollItems = [];
+                const itemsRaw = pollMatch[2].trim().split('\n');
                 let totalVotes = 0;
-                
-                const itemLines = pollMatch[2].trim().split('\n');
-                itemLines.forEach(l => {
-                    // 「- **ラベル:** 数値 votes」を抽出
-                    const m = l.match(/- \*\*(.*?):\*\* ([\d,]+) votes/i);
+                const items = itemsRaw.map(line => {
+                    const m = line.match(/- \*\*(.*?):\*\* ([\d,.]+) votes/i);
                     if (m) {
-                        const count = parseInt(m[2].replace(/,/g, ''), 10);
-                        pollItems.push({ label: m[1], votes: count });
-                        totalVotes += count;
+                        const v = parseInt(m[2].replace(/,/g, ''));
+                        totalVotes += v;
+                        return { label: m[1], votes: v };
                     }
-                });
+                    return null;
+                }).filter(i => i !== null);
 
-                if (pollItems.length > 0) {
-                    pollData = { 
-                        title: pollTitle, 
-                        items: pollItems, 
-                        total: totalVotes 
-                    };
+                if (items.length > 0) {
+                    pollData = { title: pollTitle, items: items, total: totalVotes };
                 }
             }
 
@@ -312,10 +294,8 @@
                               .replace(/- \*\*.*?\*\*.*\n/g, '') 
                               .split('####')[0].trim();
 
-            // コンテンツから投票部分を除去して二重表示を防止
-            if (pollMatch) {
-                content = content.replace(pollMatch[0], '').trim();
-            }
+            // コンテンツから投票テキスト部分を除去
+            if (pollMatch) content = content.replace(pollMatch[0], '').trim();
             
             let imageUrl = null;
             let linkInfo = [];
@@ -355,13 +335,38 @@
             const el = document.createElement('div');
             const c = (data.color || 'white').toLowerCase();
             let colorClass = 'color-white';
-            ['red', 'yellow', 'green', 'blue', 'purple'].forEach(color => { 
-                if (c.includes(color)) colorClass = `color-${color}`; 
-            });
+            const colors = ['red', 'yellow', 'green', 'blue', 'purple'];
+            colors.forEach(color => { if (c.includes(color)) colorClass = `color-${color}`; });
             el.className = `card ${colorClass}`;
 
             const rawHtml = marked.parse(data.content);
             const cleanHtml = DOMPurify.sanitize(rawHtml);
+
+            // 投票セクションの生成
+            let pollHtml = '';
+            if (data.pollData) {
+                const colors_bar = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6366f1'];
+                pollHtml = `
+                    <div class="poll-container">
+                        <div class="poll-header">${escapeHtml(data.pollData.title)}</div>
+                        ${data.pollData.items.map((item, idx) => {
+                            const percent = data.pollData.total > 0 ? Math.round((item.votes / data.pollData.total) * 100) : 0;
+                            const barColor = colors_bar[idx % colors_bar.length];
+                            return `
+                                <div class="poll-item">
+                                    <div class="poll-info">
+                                        <span class="poll-label">${escapeHtml(item.label)}</span>
+                                        <span class="poll-count">${item.votes.toLocaleString()} (${percent}%)</span>
+                                    </div>
+                                    <div class="poll-bar-bg">
+                                        <div class="poll-bar-fill" style="width: ${percent}%; background-color: ${barColor};"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }
 
             el.innerHTML = `
                 <div class="card-title">${escapeHtml(data.title)}</div>
@@ -377,30 +382,7 @@
                 ` : ''}
 
                 <div class="card-content">${cleanHtml}</div>
-
-                ${data.pollData ? `
-                    <div class="poll-container">
-                        <div class="poll-title">${escapeHtml(data.pollData.title)}</div>
-                        <div class="poll-table">
-                            ${data.pollData.items.map(item => {
-                                const percentage = data.pollData.total > 0 ? (item.votes / data.pollData.total * 100).toFixed(1) : 0;
-                                return `
-                                    <div class="poll-row">
-                                        <div class="poll-info">
-                                            <div class="poll-meta">
-                                                <span class="poll-label">${escapeHtml(item.label)}</span>
-                                                <span class="poll-votes-text">${item.votes} votes (${percentage}%)</span>
-                                            </div>
-                                            <div class="poll-bar-bg">
-                                                <div class="poll-bar-fill" style="width: ${percentage}%"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-                ` : ''}
+                ${pollHtml}
 
                 <div class="reactions-section">
                     ${data.rating > 0 ? `<span class="stars"><div class="icon icon-star"></div> ${data.rating}</span>` : ''}
