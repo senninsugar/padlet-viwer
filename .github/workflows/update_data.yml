@@ -1,0 +1,35 @@
+name: Update Padlet Data
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  update-file:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create data directory
+        run: mkdir -p data
+
+      - name: Download Markdown file
+        run: |
+          curl -L "https://padlet.com/padlets/n0g1c0jl2ak3grc5/exports/markdown.md?access_token=f3e98a732d024d0e29f661fc955cc641f832f012c3e67b7e527ba874ee7f2c29" -o data/data.md
+
+      - name: Commit and Push if changed
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/data.md
+          if ! git diff --cached --exit-code; then
+            git commit -m "chore: update data/data.md from Padlet"
+            git push
+          else
+            echo "No changes detected"
+          fi
