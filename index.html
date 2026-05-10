@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>gmail</title>
+    <title>v2</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
     
@@ -113,6 +113,15 @@
         .stars { background: #fffbeb; color: #b45309; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; }
         .comment-count { font-size: 0.7rem; color: #9ca3af; display: flex; align-items: center; }
 
+        /* Poll Table Style */
+        .poll-container { margin-top: 12px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+        .poll-title { background: #f9fafb; padding: 6px 10px; font-size: 0.75rem; font-weight: 700; border-bottom: 1px solid #e5e7eb; color: #374151; }
+        .poll-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        .poll-table td { padding: 8px 10px; border-bottom: 1px solid #f3f4f6; }
+        .poll-table tr:last-child td { border-bottom: none; }
+        .poll-label { color: #4b5563; }
+        .poll-votes { text-align: right; font-weight: 700; color: #111827; min-width: 60px; }
+
         /* Comments List */
         .comments-section { 
             margin-top: 12px; padding-top: 12px; border-top: 1px solid #f3f4f6; 
@@ -123,13 +132,6 @@
         .comment-user { font-weight: 700; color: #374151; }
         .comment-date { font-size: 0.65rem; color: #9ca3af; }
         .comment-msg { color: #4b5563; line-height: 1.4; word-break: break-all; }
-
-        /* --- Vote Table Style --- */
-        .vote-section { margin-top: 12px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
-        .vote-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; background: #fff; }
-        .vote-table th { background: #f9fafb; padding: 8px; text-align: left; border-bottom: 1px solid #e5e7eb; color: #6b7280; font-weight: 600; }
-        .vote-table td { padding: 8px; border-bottom: 1px solid #f3f4f6; color: #374151; }
-        .vote-title { background: #f3f4f6; padding: 6px 10px; font-size: 0.7rem; font-weight: 700; color: #4b5563; border-bottom: 1px solid #e5e7eb; }
 
         /* Skeleton */
         .skeleton-card { background: #fff; height: 120px; border-radius: 10px; animation: pulse 1.5s infinite; }
@@ -213,7 +215,6 @@
         }
 
         function renderBoard(markdownText, canvas) {
-            // 清掃
             const existingColumns = canvas.querySelectorAll('.column');
             existingColumns.forEach(c => c.remove());
 
@@ -254,19 +255,17 @@
             const rating = parseFloat(getMeta(/star rating.*?([\d\.]+)/i) || 0);
 
             // 投票データの抽出
-            let voteData = null;
-            const voteMatch = text.match(/\*\*(.*?の評価:)\*\*\n((?:- \*\*.*?\*\*.*\n?)+)/);
-            if (voteMatch) {
-                const voteTitle = voteMatch[1];
-                const options = [];
-                const optionLines = voteMatch[2].trim().split('\n');
-                optionLines.forEach(line => {
-                    const optMatch = line.match(/- \*\*(.*?):\*\* (.*)/);
-                    if (optMatch) {
-                        options.push({ label: optMatch[1], value: optMatch[2] });
-                    }
+            let pollData = null;
+            const pollMatch = text.match(/\*\*(.*?の評価:)\*\*\n([\s\S]*?)(?=\n\n|\n####|$)/);
+            if (pollMatch) {
+                const pollTitle = pollMatch[1];
+                const pollItems = [];
+                const itemLines = pollMatch[2].trim().split('\n');
+                itemLines.forEach(l => {
+                    const m = l.match(/- \*\*(.*?):\*\* (.*)/);
+                    if (m) pollItems.push({ label: m[1], votes: m[2] });
                 });
-                voteData = { title: voteTitle, options };
+                if (pollItems.length > 0) pollData = { title: pollTitle, items: pollItems };
             }
 
             let content = text.replace(/^.*?\n/, '') 
@@ -277,9 +276,9 @@
                               .replace(/- \*\*.*?\*\*.*\n/g, '') 
                               .split('####')[0].trim();
 
-            // コンテンツから投票部分を除去して描画を綺麗にする
-            if (voteMatch) {
-                content = content.replace(voteMatch[0], '').trim();
+            // コンテンツから投票部分を除去して二重表示を防ぐ
+            if (pollMatch) {
+                content = content.replace(pollMatch[0], '').trim();
             }
             
             let imageUrl = null;
@@ -292,7 +291,7 @@
             });
 
             return {
-                title, color, date, content, imageUrl, linkInfo, rating, voteData,
+                title, color, date, content, imageUrl, linkInfo, rating, pollData,
                 comments: parseComments(text)
             };
         }
@@ -343,21 +342,16 @@
 
                 <div class="card-content">${cleanHtml}</div>
 
-                ${data.voteData ? `
-                    <div class="vote-section">
-                        <div class="vote-title">${escapeHtml(data.voteData.title)}</div>
-                        <table class="vote-table">
-                            <thead>
-                                <tr><th>項目</th><th>票数</th></tr>
-                            </thead>
-                            <tbody>
-                                ${data.voteData.options.map(opt => `
-                                    <tr>
-                                        <td>${escapeHtml(opt.label)}</td>
-                                        <td><strong>${escapeHtml(opt.value)}</strong></td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
+                ${data.pollData ? `
+                    <div class="poll-container">
+                        <div class="poll-title">${escapeHtml(data.pollData.title)}</div>
+                        <table class="poll-table">
+                            ${data.pollData.items.map(item => `
+                                <tr>
+                                    <td class="poll-label">${escapeHtml(item.label)}</td>
+                                    <td class="poll-votes">${escapeHtml(item.votes)}</td>
+                                </tr>
+                            `).join('')}
                         </table>
                     </div>
                 ` : ''}
