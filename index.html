@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>v2</title>
+    <title>gmail</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
     
@@ -24,129 +24,131 @@
         .icon-star::before { content: ''; position: absolute; border-bottom: 4px solid #f59e0b; border-left: 3px solid transparent; border-right: 3px solid transparent; top: -3px; left: -5px; transform: rotate(-35deg); }
         .icon-star::after { content: ''; position: absolute; top: 0; left: -7px; border-right: 7px solid transparent; border-bottom: 5px solid #f59e0b; border-left: 7px solid transparent; transform: rotate(-70deg); }
 
-        /* --- Global Style --- */
+        /* --- Global Style (Padlet Style) --- */
         body {
             margin: 0; padding: 0;
-            background-color: #f3f4f6; color: #1f2937;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f4f4; color: #1a1a1a;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             height: 100vh; display: flex; flex-direction: column; overflow: hidden;
         }
 
         header {
-            padding: 0 24px; height: 60px;
-            background: #ffffff; border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px; height: 64px;
+            background: #ffffff; border-bottom: 1px solid rgba(0,0,0,0.08);
             display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
             z-index: 10;
         }
-        header h1 { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; margin: 0; cursor: pointer; user-select: none; }
-        .meta-info { font-size: 0.8rem; color: #6b7280; display: flex; gap: 16px; }
+        header h1 { font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; margin: 0; cursor: pointer; color: #121212; }
+        .meta-info { font-size: 0.85rem; color: #666; font-weight: 500; display: flex; gap: 20px; }
 
-        /* --- Room Selector Window --- */
+        /* --- Room Selector --- */
         #room-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); z-index: 100; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.6); z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(4px);
         }
         .room-window {
-            background: white; padding: 24px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-            width: 300px; text-align: center;
+            background: white; padding: 32px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            width: 320px; text-align: center;
         }
-        .room-window h2 { font-size: 1rem; margin-bottom: 16px; color: #374151; }
+        .room-window h2 { font-size: 1.2rem; margin-bottom: 20px; color: #111; }
         .room-btn {
-            display: block; width: 100%; padding: 12px; margin: 8px 0;
-            border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb;
-            cursor: pointer; font-weight: 600; color: #4b5563; transition: background 0.2s;
+            display: block; width: 100%; padding: 14px; margin: 10px 0;
+            border: 2px solid #f0f0f0; border-radius: 12px; background: #fff;
+            cursor: pointer; font-weight: 700; color: #444; transition: all 0.2s;
         }
-        .room-btn:hover { background: #eff6ff; border-color: #3b82f6; color: #3b82f6; }
+        .room-btn:hover { border-color: #000; background: #000; color: #fff; }
 
         /* --- Main Board --- */
         #board-canvas { 
             flex-grow: 1; overflow-x: auto; display: flex; 
-            padding: 24px; gap: 20px; align-items: flex-start; 
-            background-image: radial-gradient(#d1d5db 1px, transparent 1px);
-            background-size: 24px 24px;
+            padding: 24px; gap: 24px; align-items: flex-start; 
+            background-image: radial-gradient(rgba(0,0,0,0.1) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
         }
 
         .column {
-            background: #e5e7eb; min-width: 320px; max-width: 320px;
-            border-radius: 12px; display: flex; flex-direction: column; max-height: 100%; flex-shrink: 0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            background: rgba(255,255,255,0.4); min-width: 320px; max-width: 320px;
+            border-radius: 16px; display: flex; flex-direction: column; max-height: 100%; flex-shrink: 0;
+            transition: background 0.3s;
         }
+        .column:hover { background: rgba(255,255,255,0.6); }
 
-        .column-header { padding: 16px; font-weight: 700; font-size: 0.9rem; color: #4b5563; }
-        .column-body { padding: 0 12px 12px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .column-header { padding: 20px 20px 10px 20px; font-weight: 800; font-size: 1rem; color: #000; letter-spacing: -0.02em; }
+        .column-body { padding: 0 12px 16px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
 
-        /* --- Card --- */
+        /* --- Card (Padlet Reproduction) --- */
         .card {
-            background: #ffffff; border-radius: 10px; padding: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid transparent;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            animation: fadeIn 0.4s ease forwards;
+            background: #ffffff; border-radius: 16px; padding: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.08);
+            transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease;
+            animation: fadeIn 0.5s cubic-bezier(0.2, 0, 0, 1) forwards;
+            overflow: hidden;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         
-        .card:hover { transform: translateY(-3px); border-color: #d1d5db; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); }
 
-        .card.color-red { border-top: 5px solid #ef4444; }
-        .card.color-yellow { border-top: 5px solid #f59e0b; }
-        .card.color-green { border-top: 5px solid #10b981; }
-        .card.color-blue { border-top: 5px solid #3b82f6; }
-        .card.color-purple { border-top: 5px solid #8b5cf6; }
-        .card.color-white { border-top: 5px solid #9ca3af; }
+        /* Border accent */
+        .card.color-red { border-top: 6px solid #ff4d4d; }
+        .card.color-yellow { border-top: 6px solid #ffbc00; }
+        .card.color-green { border-top: 6px solid #00c853; }
+        .card.color-blue { border-top: 6px solid #2979ff; }
+        .card.color-purple { border-top: 6px solid #aa00ff; }
+        .card.color-white { border-top: 6px solid #e0e0e0; }
 
-        .card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; color: #111827; }
-        .card-meta-header { font-size: 0.75rem; color: #9ca3af; margin-bottom: 12px; display: flex; align-items: center; justify-content: flex-end; }
+        .card-inner { padding: 16px; }
+        .card-title { font-size: 1rem; font-weight: 800; margin-bottom: 8px; color: #000; line-height: 1.3; }
+        .card-meta-header { font-size: 0.75rem; color: #888; margin-bottom: 12px; display: flex; align-items: center; font-weight: 600; }
 
-        .card-content { font-size: 0.85rem; line-height: 1.6; color: #4b5563; overflow-wrap: break-word; }
+        .card-content { font-size: 0.9rem; line-height: 1.5; color: #333; overflow-wrap: break-word; }
         
-        .attachment-area { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
-        .attachment-area img { max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #f3f4f6; }
+        .attachment-area { margin-bottom: 0; width: 100%; }
+        .attachment-area img { width: 100%; height: auto; display: block; object-fit: cover; border-bottom: 1px solid rgba(0,0,0,0.05); }
 
+        .action-link-container { padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 8px; }
         .action-link {
-            display: inline-block; font-size: 0.7rem; padding: 6px 12px; 
-            background: #f3f4f6; border-radius: 6px; text-decoration: none; 
-            color: #3b82f6 !important; font-weight: 600; border: 1px solid #e5e7eb;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            font-size: 0.75rem; padding: 8px 12px; 
+            background: #f5f5f5; border-radius: 20px; text-decoration: none; 
+            color: #1a1a1a !important; font-weight: 700; border: 1px solid transparent;
+            transition: all 0.2s;
         }
+        .action-link:hover { background: #000; color: #fff !important; }
 
-        /* Reactions */
-        .reactions-section { margin-top: 12px; display: flex; align-items: center; gap: 12px; }
-        .stars { background: #fffbeb; color: #b45309; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; }
-        .comment-count { font-size: 0.7rem; color: #9ca3af; display: flex; align-items: center; }
+        /* --- Poll System (Visual) --- */
+        .poll-container { margin: 12px 0; background: #fafafa; border-radius: 12px; padding: 12px; border: 1px solid #eee; }
+        .poll-header { font-size: 0.8rem; font-weight: 800; color: #000; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .poll-item { margin-bottom: 8px; position: relative; }
+        .poll-row { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 4px; font-weight: 600; position: relative; z-index: 2; padding: 0 4px; }
+        .poll-bar-bg { height: 24px; width: 100%; background: #eee; border-radius: 6px; overflow: hidden; position: absolute; top: -4px; left: 0; z-index: 1; }
+        .poll-bar-fill { height: 100%; background: #000; opacity: 0.1; width: 0%; transition: width 1s ease-out; }
+        .poll-item:hover .poll-bar-fill { opacity: 0.15; }
 
-        /* Poll Table Style */
-        .poll-container { margin-top: 12px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
-        .poll-title { background: #f9fafb; padding: 6px 10px; font-size: 0.75rem; font-weight: 700; border-bottom: 1px solid #e5e7eb; color: #374151; }
-        .poll-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-        .poll-table td { padding: 8px 10px; border-bottom: 1px solid #f3f4f6; }
-        .poll-table tr:last-child td { border-bottom: none; }
-        .poll-label { color: #4b5563; }
-        .poll-votes { text-align: right; font-weight: 700; color: #111827; min-width: 60px; }
+        /* --- Reactions & Footer --- */
+        .card-footer { padding: 12px 16px; border-top: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; background: #fff; }
+        .reactions-left { display: flex; gap: 12px; }
+        .stars { color: #f59e0b; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; }
+        .comment-count { font-size: 0.75rem; color: #888; display: flex; align-items: center; font-weight: 600; }
 
         /* Comments List */
-        .comments-section { 
-            margin-top: 12px; padding-top: 12px; border-top: 1px solid #f3f4f6; 
-            display: flex; flex-direction: column; gap: 8px;
-        }
-        .comment-item { font-size: 0.75rem; background: #f9fafb; padding: 10px; border-radius: 8px; border: 1px solid #f3f4f6; }
-        .comment-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-        .comment-user { font-weight: 700; color: #374151; }
-        .comment-date { font-size: 0.65rem; color: #9ca3af; }
-        .comment-msg { color: #4b5563; line-height: 1.4; word-break: break-all; }
+        .comments-section { padding: 8px 12px 16px 12px; background: #fdfdfd; display: flex; flex-direction: column; gap: 10px; }
+        .comment-item { font-size: 0.8rem; line-height: 1.4; border-left: 3px solid #eee; padding-left: 10px; }
+        .comment-user { font-weight: 800; color: #111; margin-right: 6px; }
+        .comment-msg { color: #555; }
 
         /* Skeleton */
-        .skeleton-card { background: #fff; height: 120px; border-radius: 10px; animation: pulse 1.5s infinite; }
+        .skeleton-card { background: #fff; height: 160px; border-radius: 16px; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <header>
         <h1 id="header-title" ondblclick="showRoomSelector()">
-            <div class="icon icon-board"></div>
+            <div class="icon icon-board" style="margin-right: 12px;"></div>
             <span id="board-title">読み込み中...</span>
         </h1>
         <div class="meta-info" id="meta-info">Loading...</div>
@@ -154,16 +156,16 @@
 
     <div id="room-overlay" onclick="hideRoomSelector()">
         <div class="room-window" onclick="event.stopPropagation()">
-            <h2>部屋を選択</h2>
+            <h2>ボードを選択</h2>
             <button class="room-btn" onclick="changeRoom('./data/data.md')">proxyなど教える会</button>
             <button class="room-btn" onclick="changeRoom('https://raw.githubusercontent.com/toka-kun/Padlet-Viewer/main/padlet_export.md')">Toka_kun</button>
         </div>
     </div>
 
     <main id="board-canvas">
-        <div id="loading" style="display:flex; gap:20px; width:100%;">
-            <div class="column" style="padding:12px; gap:12px;"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
-            <div class="column" style="padding:12px; gap:12px;"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+        <div id="loading" style="display:flex; gap:24px; width:100%;">
+            <div class="column"><div class="column-body"><div class="skeleton-card"></div><div class="skeleton-card"></div></div></div>
+            <div class="column"><div class="column-body"><div class="skeleton-card"></div><div class="skeleton-card"></div></div></div>
         </div>
     </main>
 
@@ -183,9 +185,9 @@
             hideRoomSelector();
             const canvas = document.getElementById('board-canvas');
             canvas.innerHTML = `
-                <div id="loading" style="display:flex; gap:20px; width:100%;">
-                    <div class="column" style="padding:12px; gap:12px;"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
-                    <div class="column" style="padding:12px; gap:12px;"><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+                <div id="loading" style="display:flex; gap:24px; width:100%;">
+                    <div class="column"><div class="column-body"><div class="skeleton-card"></div></div></div>
+                    <div class="column"><div class="column-body"><div class="skeleton-card"></div></div></div>
                 </div>`;
             fetchAndRender();
         }
@@ -200,7 +202,7 @@
                 const fullText = await response.text();
                 
                 const postsMatch = fullText.match(/\*\*Posts:\*\* (\d+)/i);
-                metaInfoDiv.innerHTML = `<span>Total: ${postsMatch ? postsMatch[1] : '0'} posts</span>`;
+                metaInfoDiv.innerHTML = `<span>${postsMatch ? postsMatch[1] : '0'} 投稿</span>`;
 
                 const splitIndex = fullText.indexOf('\n\n# ');
                 const markdownContent = splitIndex !== -1 ? fullText.substring(splitIndex + 2) : fullText;
@@ -210,7 +212,7 @@
 
                 renderBoard(markdownContent, canvas);
             } catch (error) {
-                canvas.innerHTML = `<div style="padding:20px; color:#ef4444;">ファイルの読み込みに失敗しました（${currentMarkdownUrl}）</div>`;
+                canvas.innerHTML = `<div style="padding:40px; font-weight:700; color:#ef4444;">Failed to load data.</div>`;
             }
         }
 
@@ -254,18 +256,31 @@
             const date = getMeta(/Created At \(UTC\):\s*(.*)/i) || getMeta(/\*\*Created At:\*\* (.*)/i) || '';
             const rating = parseFloat(getMeta(/star rating.*?([\d\.]+)/i) || 0);
 
-            // 投票データの抽出
+            // 投票データの抽出 (汎用化: 任意の「**～:**」に続くリストを判定)
             let pollData = null;
-            const pollMatch = text.match(/\*\*(.*?の評価:)\*\*\n([\s\S]*?)(?=\n\n|\n####|$)/);
+            const pollMatch = text.match(/\*\*([^:\n]+:)\*\*\n((?:- \*\*.*?\*\*.*?\n?)+)/);
             if (pollMatch) {
                 const pollTitle = pollMatch[1];
                 const pollItems = [];
                 const itemLines = pollMatch[2].trim().split('\n');
+                let totalVotes = 0;
+
                 itemLines.forEach(l => {
-                    const m = l.match(/- \*\*(.*?):\*\* (.*)/);
-                    if (m) pollItems.push({ label: m[1], votes: m[2] });
+                    const m = l.match(/- \*\*(.*?):\*\* (\d+)/);
+                    if (m) {
+                        const v = parseInt(m[2]);
+                        pollItems.push({ label: m[1], votes: v });
+                        totalVotes += v;
+                    } else {
+                        // 数値以外のvotes（"いいね"など）にも対応
+                        const mSimple = l.match(/- \*\*(.*?):\*\* (.*)/);
+                        if(mSimple) pollItems.push({ label: mSimple[1], votes: mSimple[2] });
+                    }
                 });
-                if (pollItems.length > 0) pollData = { title: pollTitle, items: pollItems };
+
+                if (pollItems.length > 0) {
+                    pollData = { title: pollTitle, items: pollItems, total: totalVotes };
+                }
             }
 
             let content = text.replace(/^.*?\n/, '') 
@@ -276,7 +291,6 @@
                               .replace(/- \*\*.*?\*\*.*\n/g, '') 
                               .split('####')[0].trim();
 
-            // コンテンツから投票部分を除去して二重表示を防ぐ
             if (pollMatch) {
                 content = content.replace(pollMatch[0], '').trim();
             }
@@ -327,49 +341,64 @@
             const rawHtml = marked.parse(data.content);
             const cleanHtml = DOMPurify.sanitize(rawHtml);
 
+            // 投票セクションのHTML生成
+            let pollHtml = '';
+            if (data.pollData) {
+                pollHtml = `
+                    <div class="poll-container">
+                        <div class="poll-header">
+                            <span>${escapeHtml(data.pollData.title)}</span>
+                            <span>${data.pollData.total > 0 ? data.pollData.total + ' 票' : ''}</span>
+                        </div>
+                        ${data.pollData.items.map(item => {
+                            const percent = data.pollData.total > 0 ? (parseInt(item.votes) / data.pollData.total * 100) : 0;
+                            return `
+                                <div class="poll-item">
+                                    <div class="poll-row">
+                                        <span>${escapeHtml(item.label)}</span>
+                                        <span>${escapeHtml(String(item.votes))}</span>
+                                    </div>
+                                    <div class="poll-bar-bg">
+                                        <div class="poll-bar-fill" style="width: ${percent}%"></div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }
+
             el.innerHTML = `
-                <div class="card-title">${escapeHtml(data.title)}</div>
-                <div class="card-meta-header">
-                    <span>${data.date.split(' ')[0]}</span>
-                </div>
-                
                 ${data.imageUrl ? `<div class="attachment-area"><img src="${data.imageUrl}"></div>` : ''}
+                
+                <div class="card-inner">
+                    <div class="card-title">${escapeHtml(data.title)}</div>
+                    <div class="card-meta-header">
+                        <span>${data.date.split(' ')[0]}</span>
+                    </div>
+                    <div class="card-content">${cleanHtml}</div>
+                    ${pollHtml}
+                </div>
+
                 ${data.linkInfo.length > 0 ? `
-                    <div class="attachment-area">
+                    <div class="action-link-container">
                         ${data.linkInfo.map(link => `<a href="${link.url}" target="_blank" class="action-link">🔗 ${escapeHtml(link.label || 'リンク')}</a>`).join('')}
                     </div>
                 ` : ''}
 
-                <div class="card-content">${cleanHtml}</div>
-
-                ${data.pollData ? `
-                    <div class="poll-container">
-                        <div class="poll-title">${escapeHtml(data.pollData.title)}</div>
-                        <table class="poll-table">
-                            ${data.pollData.items.map(item => `
-                                <tr>
-                                    <td class="poll-label">${escapeHtml(item.label)}</td>
-                                    <td class="poll-votes">${escapeHtml(item.votes)}</td>
-                                </tr>
-                            `).join('')}
-                        </table>
+                <div class="card-footer">
+                    <div class="reactions-left">
+                        ${data.rating > 0 ? `<span class="stars"><div class="icon icon-star"></div> ${data.rating}</span>` : ''}
+                        ${data.comments.length > 0 ? `<span class="comment-count"><div class="icon icon-comment"></div>${data.comments.length}</span>` : ''}
                     </div>
-                ` : ''}
-
-                <div class="reactions-section">
-                    ${data.rating > 0 ? `<span class="stars"><div class="icon icon-star"></div> ${data.rating}</span>` : ''}
-                    ${data.comments.length > 0 ? `<span class="comment-count"><div class="icon icon-comment"></div>${data.comments.length}</span>` : ''}
                 </div>
 
                 ${data.comments.length > 0 ? `
                     <div class="comments-section">
                         ${data.comments.map(c => `
                             <div class="comment-item">
-                                <div class="comment-top">
-                                    <span class="comment-user">${escapeHtml(c.user)}</span>
-                                    ${c.date ? `<span class="comment-date">${escapeHtml(c.date)}</span>` : ''}
-                                </div>
-                                <div class="comment-msg">${escapeHtml(c.msg)}</div>
+                                <span class="comment-user">${escapeHtml(c.user)}</span>
+                                <span class="comment-msg">${escapeHtml(c.msg)}</span>
                             </div>
                         `).join('')}
                     </div>
