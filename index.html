@@ -262,16 +262,17 @@
             const date = getMeta(/Created At \(UTC\):\s*(.*)/i) || getMeta(/\*\*Created At:\*\* (.*)/i) || '';
             const rating = parseFloat(getMeta(/star rating.*?([\d\.]+)/i) || 0);
 
-            // 汎用投票データの抽出ロジック
+            // --- 投票データの抽出 ---
             let pollData = null;
-            // 正規表現: 太字タイトル + 改行 + 箇条書き（- **項目名:** 数 votes）
-            const pollMatch = text.match(/\*\*([^\n]*?評価:|[^\n]*?アンケート:|[^\n]*?Poll:)\*\*\n((?:- \*\*.*?\*\*.*?\n?)+)/i);
+            // 評価やアンケートのタイトルを太字で探す
+            const pollMatch = text.match(/\*\*([^*]+?(?:評価|アンケート|Poll|結果):?)\*\*\n((?:- \*\*.*?\*\*.*?\n?)+)/i);
             
             if (pollMatch) {
                 const pollTitle = pollMatch[1];
                 const itemsRaw = pollMatch[2].trim().split('\n');
                 let totalVotes = 0;
                 const items = itemsRaw.map(line => {
+                    // 数値の抽出。 "113 votes" のような形式に対応
                     const m = line.match(/- \*\*(.*?):\*\* ([\d,.]+) votes/i);
                     if (m) {
                         const v = parseInt(m[2].replace(/,/g, ''));
@@ -286,16 +287,20 @@
                 }
             }
 
-            let content = text.replace(/^.*?\n/, '') 
+            // コンテンツのクリーニング（投票データを保持したまま、不要なメタ行のみ消す）
+            let content = text.replace(/^.*?\n/, '') // タイトル削除
                               .replace(/#### Summary[\s\S]*?(?=####|$)/i, '') 
                               .replace(/Post color:.*\n/gi, '')
                               .replace(/Created At \(UTC\):.*\n/gi, '')
                               .replace(/Updated At \(UTC\):.*\n/gi, '')
-                              .replace(/- \*\*.*?\*\*.*\n/g, '') 
+                              .replace(/- \*\*Color:\*\*.*\n/gi, '')
+                              .replace(/- \*\*Created At:\*\*.*\n/gi, '')
                               .split('####')[0].trim();
 
-            // コンテンツから投票テキスト部分を除去
-            if (pollMatch) content = content.replace(pollMatch[0], '').trim();
+            // 投票データが含まれる場合は、コンテンツ本文からはその文字列を隠して専用セクションで出す
+            if (pollMatch) {
+                content = content.replace(pollMatch[0], '').trim();
+            }
             
             let imageUrl = null;
             let linkInfo = [];
@@ -342,7 +347,7 @@
             const rawHtml = marked.parse(data.content);
             const cleanHtml = DOMPurify.sanitize(rawHtml);
 
-            // 投票セクションの生成
+            // 投票セクションのHTML生成
             let pollHtml = '';
             if (data.pollData) {
                 const colors_bar = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6366f1'];
@@ -356,7 +361,7 @@
                                 <div class="poll-item">
                                     <div class="poll-info">
                                         <span class="poll-label">${escapeHtml(item.label)}</span>
-                                        <span class="poll-count">${item.votes.toLocaleString()} (${percent}%)</span>
+                                        <span class="poll-count">${item.votes.toLocaleString()} votes (${percent}%)</span>
                                     </div>
                                     <div class="poll-bar-bg">
                                         <div class="poll-bar-fill" style="width: ${percent}%; background-color: ${barColor};"></div>
